@@ -24,8 +24,34 @@ app.get('/',(req,res)=>{
 const client = new MongoClient(uri, { useNewUrlParser: true ,useUnifiedTopology: true });
 client.connect(err => {
   const apartmentCollection = client.db("apartmentStore").collection("appointment");
-  const bookCollection = client.db("apartmentStore").collection("booking");
+  const bookingCollection = client.db("apartmentStore").collection("booking");
   console.log("data base connect");
+//booking apartment
+app.post('/bookApartment',(req,res)=>{
+    const book=req.body;
+    bookingCollection.insertOne(book)
+    .then(result => {
+      res.send(result.insertedCount > 0)
+  })
+})
+ //get user single  apartment
+ app.get('/singleApartment',(req, res) => {
+    const userEmail=req.query.email;
+    console.log(userEmail)
+    bookingCollection.find({Email:userEmail})
+      .toArray((err, documents) => {
+          res.send(documents);
+      })
+  })
+   
+//user apartment
+app.get('/userapartment', (req, res) => {
+    bookingCollection.find({})
+      .toArray((err, documents) => {
+          res.send(documents);
+      })
+     
+})
    // add apartment
    app.post('/addApartment',(req,res)=>{
     const file = req.files.file;
@@ -49,20 +75,13 @@ client.connect(err => {
 
 })
 //get service
-app.get('/apartment', (req, res) => {
+app.get('/apartment',(req, res) => {
     apartmentCollection.find({})
         .toArray((err, documents) => {
             res.send(documents);
         })
     })
 });
- //booking apartment
- app.post('/bookApartment',(req,res)=>{
-    const orderservice=req.body;
-    bookCollection.insertOne(orderservice)
-    .then(result => {
-      res.send(result.insertedCount > 0)
-  })
-})
+ 
 
 app.listen(process.env.PORT || port)
